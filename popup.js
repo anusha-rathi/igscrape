@@ -30,9 +30,14 @@ async function render() {
   $("list").innerHTML = "";
   for (const p of posts.slice(-20).reverse()) {
     const li = document.createElement("li");
-    li.textContent = `${p.kind} · @${p.author}${p.location ? ` · 📍${p.location}` : ""} · ${p.likes ?? "?"} likes · ${p.caption.slice(0, 40)}`;
+    li.textContent = `${p.kind} · @${p.author || "?"}${p.location ? ` · 📍${p.location}` : ""} · ${p.likes ?? "?"} likes · ${(p.caption || "").slice(0, 40)}`;
     $("list").appendChild(li);
   }
+}
+
+async function showQueue() {
+  const { queue = [], stopped } = await chrome.storage.local.get(["queue", "stopped"]);
+  $("queue").textContent = queue.length ? `queue: ${queue.length} posts left` : stopped ? `queue stopped: ${stopped}` : "";
 }
 
 $("export").onclick = async () => download(await get(), "ig-posts");
@@ -40,15 +45,8 @@ $("exportLinks").onclick = async () => download(await links(), "ig-links");
 $("clear").onclick = async () => {
   if ((await get()).length && !confirm("clear all saved posts? export first if you need them.")) return;
   await chrome.storage.local.remove("posts");
-  chrome.storage.local.get(["queue", "stopped"]).then(({ queue = [], stopped }) => {
-  $("queue").textContent = queue.length ? `queue: ${queue.length} posts left` : stopped ? `queue stopped: ${stopped}` : "";
-});
-
-render();
+  render();
 };
 
-chrome.storage.local.get(["queue", "stopped"]).then(({ queue = [], stopped }) => {
-  $("queue").textContent = queue.length ? `queue: ${queue.length} posts left` : stopped ? `queue stopped: ${stopped}` : "";
-});
-
+showQueue();
 render();

@@ -7,7 +7,7 @@ performance.setResourceTimingBufferSize(5000);
 // dropping bytestart/byteend turns one segment url into the whole track
 function streams() {
   const out = { audio: "", video: "" };
-  // ponytail: first tracks fetched after you landed on this post; a feed that preloads the next reel
+  // known limit: first tracks fetched after you landed on this post; a feed that preloads the next reel
   // could hand us that one instead, so open reels as their own page (/reel/<code>/) before saving
   for (const e of performance.getEntriesByType("resource")) {
     if (e.startTime < navAt || !/\.mp4\?/.test(e.name) || !/fbcdn\.net|cdninstagram\.com/.test(new URL(e.name).host)) continue;
@@ -53,10 +53,17 @@ setInterval(async () => {
 }, 3000);
 
 // carousel slides load one at a time as you click through, so collect every post image we see
+// instagram mutates the dom constantly, so scan at most once per frame
+let scheduled = false;
 new MutationObserver(() => {
-  collectLinks();
-  document.querySelectorAll("main img[srcset], article img[srcset]").forEach(i => {
-    if (i.naturalWidth >= 300 || i.width >= 300) slides.add(i.currentSrc || i.src);
+  if (scheduled) return;
+  scheduled = true;
+  requestAnimationFrame(() => {
+    scheduled = false;
+    collectLinks();
+    document.querySelectorAll("main img[srcset], article img[srcset]").forEach(i => {
+      if (i.naturalWidth >= 300 || i.width >= 300) slides.add(i.currentSrc || i.src);
+    });
   });
 }).observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ["src"] });
 
@@ -107,11 +114,12 @@ btn.onclick = save;
 window.addEventListener("message", e => {
   if (e.source === window && e.data?.type === "igscrape-queue") chrome.runtime.sendMessage({ queue: e.data.urls });
 });
-if (POST.test(location.pathname)) setTimeout(async () => {
+// only the queue's tab auto-saves; everywhere else saving is the button
+if (POST.test(location.pathname)) chrome.runtime.sendMessage({ inQueue: true }).then(inQueue => inQueue && setTimeout(async () => {
   // 4s lets reel audio start streaming so streams() can see it; a crash still reports, as an empty page
   const p = await save().catch(e => (console.error("igscrape", e), {}));
   chrome.runtime.sendMessage({ saved: p.code || location.pathname, ok: !!(p.caption || p.likes) });
-}, 4000);
+}, 4000));
 document.documentElement.appendChild(btn);
 
 // instagram is a single-page app: watch the url instead of waiting for page loads
