@@ -1,0 +1,36 @@
+<!doctype html>
+<meta charset="utf-8">
+<style>
+  :root { --brand: #ff5c35; --ink: #1d1b19; --muted: #7a726b; --line: #ece6e0; --bg: #fffaf6; }
+  body { width: 320px; margin: 0; font: 13px/1.4 system-ui; color: var(--ink); background: var(--bg); }
+  header { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: var(--ink); color: #fff; }
+  header img { width: 28px; height: 28px; border-radius: 7px; box-shadow: 0 0 0 1.5px #fff6; }
+  header b { font-size: 15px; letter-spacing: .2px; } header small { display: block; opacity: .8; font-size: 11px; }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 12px 14px 4px; }
+  .stat { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 6px 4px; text-align: center; }
+  .stat b { display: block; font-size: 16px; color: var(--brand); } .stat span { font-size: 10.5px; color: var(--muted); }
+  h4 { margin: 12px 14px 4px; font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); }
+  ul { list-style: none; margin: 0 14px; padding: 0; max-height: 130px; overflow: auto; }
+  li { padding: 4px 0; border-bottom: 1px solid var(--line); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  li:empty::before, ul:empty::before { content: "nothing saved yet - open a post and hit save"; color: var(--muted); }
+  .row { display: flex; gap: 6px; padding: 12px 14px; }
+  button { flex: 1; padding: 7px 0; border-radius: 8px; border: 1px solid var(--brand); background: #fff; color: var(--brand); font: 600 12px system-ui; cursor: pointer; }
+  button.primary { background: var(--brand); color: #fff; } button:hover { filter: brightness(.95); }
+  select { border: 1px solid var(--brand); border-radius: 8px; color: var(--brand); background: #fff; font: 600 12px system-ui; }
+  footer { padding: 0 14px 12px; font-size: 11px; color: var(--muted); }
+</style>
+<header><img src="icons/48.png" alt=""><div><b>igscrape</b><small>collect posts, reels &amp; carousels as you browse</small></div></header>
+<div class="stats">
+  <div class="stat"><b id="reels">0</b><span>reels</span></div>
+  <div class="stat"><b id="posts">0</b><span>posts</span></div>
+  <div class="stat"><b id="carousels">0</b><span>carousels</span></div>
+  <div class="stat"><b id="accounts">0</b><span>accounts</span></div>
+</div>
+<div class="row"><button id="exportLinks" class="primary">export links</button>
+  <select id="fmt" title="export format"><option value="csv">csv</option><option value="json">json</option></select></div>
+<footer id="queue"></footer>
+<h4 id="count">0 posts saved</h4>
+<ul id="list"></ul>
+<div class="row"><button id="export">export saved</button><button id="clear">clear saved</button></div>
+<footer>links collect on their own as you scroll. exports land in Downloads. csv opens in excel, sheets and google my maps.</footer>
+<script src="popup.js"></script>
